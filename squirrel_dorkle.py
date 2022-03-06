@@ -9,14 +9,12 @@ from those picks.  Next find all words that can be found based on information
 gleaned from the later picks.  Finally, if the problem is not solved, scan
 for a word that can uniquely filter out the remaining picks.
 """
-# TO DO: See https://stackoverflow.com/questions/63454923/
-# why-is-my-scraper-returning-an-empty-list-while-trying-to-scrape-
-# from-this-websi
 # TO DO: It would be nice to add scrolling to the display
 import os
 from datetime import datetime
-
 from time import sleep
+import requests
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -367,6 +365,21 @@ def do_scan(wlist, anlist):
 #
 # Section 4 -- Top level calling of everything.
 #
+def extract_data(field):
+    """
+    Write the allowed and answer files from data extracted from the
+    sedecordle code
+
+    @param filed str file name (allowed or answers)
+    """
+    from_loc = ''.join([field, ' = "'])
+    wpage = requests.get("http://sedecordle.com")
+    tfront = str(wpage.content)
+    first_str = tfront[tfront.find(from_loc):]
+    ret_data = first_str[0:first_str.find('".split(')]
+    with open(''.join([field, ".txt"]), 'w', encoding="utf8") as fdesc:
+        fdesc.write(ret_data[len(from_loc):])
+
 def solve_it(wsite, display_time):
     """
     Main routine.  Pick the first four picks and then call the WebInterface
@@ -378,6 +391,8 @@ def solve_it(wsite, display_time):
     @param wsite String web site name
     @param display_time int number of seconds to linger on the last screen
     """
+    extract_data('allowed')
+    extract_data('answers')
     if not os.path.exists("data"):
         os.mkdir("data")
     w_interf = WebInterface(wsite)
